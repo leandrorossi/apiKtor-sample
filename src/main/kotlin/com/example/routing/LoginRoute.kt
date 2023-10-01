@@ -2,7 +2,7 @@ package com.example.routing
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.example.dao.UserRepository
+import com.example.repository.UserRepository
 import com.example.models.User
 import io.ktor.http.*
 import io.ktor.server.application.*

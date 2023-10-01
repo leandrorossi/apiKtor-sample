@@ -1,6 +1,6 @@
 package com.example.routing
 
-import com.example.dao.ToolRepository
+import com.example.repository.ToolRepository
 import com.example.models.Tool
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -37,7 +37,7 @@ private fun Route.getAllTools() {
 
 private fun Route.getTool() {
     get("/tool/{id?}") {
-        val id = call.parameters["id"]?.toInt() ?: return@get call.respondText(
+        val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText(
             "Missing id",
             status = HttpStatusCode.BadRequest
         )
@@ -60,7 +60,7 @@ private fun Route.insertTool() {
 
 private fun Route.editTool() {
     put("/tool/{id?}") {
-        val id = call.parameters["id"]?.toInt() ?: return@put call.respondText(
+        val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.respondText(
             "Missing id",
             status = HttpStatusCode.BadRequest
         )
@@ -77,7 +77,7 @@ private fun Route.editTool() {
 
 private fun Route.deleteTool() {
     delete("/tool/{id?}") {
-        val id = call.parameters["id"]?.toInt() ?: return@delete call.respondText(
+        val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondText(
             "Missing id",
             status = HttpStatusCode.BadRequest
         )

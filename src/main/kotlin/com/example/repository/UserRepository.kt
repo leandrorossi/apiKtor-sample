@@ -1,5 +1,6 @@
-package com.example.dao
+package com.example.repository
 
+import com.example.dao.DAOFacade
 import com.example.dao.DatabaseFactory.dbQuery
 import com.example.models.User
 import com.example.models.Users

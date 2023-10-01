@@ -1,6 +1,6 @@
 package com.example.routing
 
-import com.example.dao.UserRepository
+import com.example.repository.UserRepository
 import com.example.models.User
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -37,7 +37,7 @@ private fun Route.getAllUsers() {
 
 private fun Route.getUser() {
     get("user/{id?}") {
-        val id = call.parameters["id"]?.toInt() ?: return@get call.respondText(
+        val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText(
             "Missing id",
             status = HttpStatusCode.BadRequest
         )
@@ -60,7 +60,7 @@ private fun Route.insertUser() {
 
 private fun Route.editUser() {
     put("/user/{id?}") {
-        val id = call.parameters["id"]?.toInt() ?: return@put call.respondText(
+        val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.respondText(
             "Missing id",
             status = HttpStatusCode.BadRequest
         )
@@ -77,7 +77,7 @@ private fun Route.editUser() {
 
 private fun Route.deleteUser() {
     delete("/user/{id?}") {
-        val id = call.parameters["id"]?.toInt() ?: return@delete call.respondText(
+        val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respondText(
             "Missing id",
             status = HttpStatusCode.BadRequest
         )

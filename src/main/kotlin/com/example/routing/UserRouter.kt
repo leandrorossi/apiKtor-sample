@@ -13,7 +13,8 @@ fun Application.userRouter() {
     routing {
         authenticate("auth-jwt") {
             getAllUsers()
-            getUser()
+            getUserById()
+            getUserByName()
             insertUser()
             editUser()
             deleteUser()
@@ -35,7 +36,7 @@ private fun Route.getAllUsers() {
     }
 }
 
-private fun Route.getUser() {
+private fun Route.getUserById() {
     get("user/{id?}") {
         val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText(
             "Missing id",
@@ -43,6 +44,20 @@ private fun Route.getUser() {
         )
         val user = userRepository.findById(id) ?: return@get call.respondText(
             "No found with id $id",
+            status = HttpStatusCode.NotFound
+        )
+        call.respond(user)
+    }
+}
+
+private fun Route.getUserByName() {
+    get("username/{name?}") {
+        val name = call.parameters["name"] ?: return@get call.respondText(
+            "Missing name",
+            status = HttpStatusCode.BadRequest
+        )
+        val user = userRepository.findByName(name) ?: return@get call.respondText(
+            "No found with name $name",
             status = HttpStatusCode.NotFound
         )
         call.respond(user)

@@ -31,7 +31,7 @@ class UserRepository : DAOFacade<User> {
         Users
             .select {Users.name eq name}
             .map(::resultRowToUser)
-            .singleOrNull()
+            .firstOrNull()
     }
 
     override suspend fun insert(model: User): User? = dbQuery {

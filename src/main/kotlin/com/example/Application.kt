@@ -14,9 +14,9 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 fun Application.module() {
     DatabaseFactory.init(environment.config)
+    configureJWT()
     configureSerialization()
     configureCompression()
-    configureJWT()
 
     userRouter()
     loginRouter()

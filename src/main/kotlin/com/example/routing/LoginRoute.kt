@@ -23,46 +23,39 @@ fun Application.loginRouter() {
 }
 
 private val userRepository = UserRepository()
-
-private const val SECRET = "secret"
-private const val ISSUER = "http://0.0.0.0:8080/"
-private const val AUDIENCE = "http://0.0.0.0:8080/login"
 private val regex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]+\$")
 
 private fun Route.register() {
+    val env = environment!!
+
     post("/register") {
         val user = call.receive<User>()
 
         if (user.password.toString().length < 6) {
-            call.respondText("Password must be greater than 6 characters",  status = HttpStatusCode.BadRequest)
+            call.respondText("Password must be greater than 6 characters", status = HttpStatusCode.BadRequest)
         }
         if (!regex.matches(user.password.toString())) {
-            call.respondText("Password does not meet character requirements",  status = HttpStatusCode.BadRequest)
+            call.respondText("Password does not meet character requirements", status = HttpStatusCode.BadRequest)
         }
 
         user.password = BCrypt.hashpw(user.password, BCrypt.gensalt())
         userRepository.insert(user)
 
-        val token = JWT.create()
-            .withAudience(AUDIENCE)
-            .withIssuer(ISSUER)
-            .withClaim("claim", user.name)
-            .withExpiresAt(Date(System.currentTimeMillis() + 600000))
-            .sign(Algorithm.HMAC256(SECRET))
-
-        call.respond(hashMapOf("token" to token))
+        call.respond(hashMapOf("token" to createToken(user, env)))
     }
 }
 
 private fun Route.login() {
+    val env = environment!!
+
     post("/login") {
         val request = call.receive<User>()
 
         if (request.password.toString().length < 6) {
-            call.respondText("Password must be greater than 6 characters",  status = HttpStatusCode.BadRequest)
+            call.respondText("Password must be greater than 6 characters", status = HttpStatusCode.BadRequest)
         }
         if (!regex.matches(request.password.toString())) {
-            call.respondText("Password does not meet character requirements",  status = HttpStatusCode.BadRequest)
+            call.respondText("Password does not meet character requirements", status = HttpStatusCode.BadRequest)
         }
 
         val user = userRepository.findByName(request.name) ?: return@post call.respondText(
@@ -70,18 +63,11 @@ private fun Route.login() {
             status = HttpStatusCode.NotFound
         )
 
-        if(!BCrypt.checkpw(request.password, user.password)) {
-            call.respondText("Password Invalid",  status = HttpStatusCode.BadRequest)
+        if (!BCrypt.checkpw(request.password, user.password)) {
+            call.respondText("Password Invalid", status = HttpStatusCode.BadRequest)
         }
 
-        val token = JWT.create()
-            .withAudience(AUDIENCE)
-            .withIssuer(ISSUER)
-            .withClaim("claim", request.name)
-            .withExpiresAt(Date(System.currentTimeMillis() + 600000))
-            .sign(Algorithm.HMAC256(SECRET))
-
-        call.respond(hashMapOf("token" to token))
+        call.respond(hashMapOf("token" to createToken(user, env)))
     }
 }
 
@@ -95,4 +81,19 @@ private fun Route.token() {
             call.respondText("Token, $user! Token is expired at $expiresAt ms.")
         }
     }
+}
+
+private fun createToken(user: User, environment: ApplicationEnvironment): String {
+
+    val secret = environment.config.property("jwt.secret").getString()
+    val issuer = environment.config.property("jwt.issuer").getString()
+    val audience = environment.config.property("jwt.audience").getString()
+
+    return JWT.create()
+        .withAudience(audience)
+        .withIssuer(issuer)
+        .withClaim("claim", user.name)
+        .withExpiresAt(Date(System.currentTimeMillis() + 6000000))
+        .sign(Algorithm.HMAC256(secret))
+
 }

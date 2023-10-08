@@ -8,6 +8,8 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.plugins.ratelimit.*
+import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -16,9 +18,26 @@ import java.util.*
 
 fun Application.loginRouter() {
     routing {
-        login()
-        register()
-        token()
+        rateLimit(RateLimitName("public")) {
+            install(RequestValidation) {
+                validate<User> {user ->
+                    when {
+                        (user.password.toString().length < 6) -> {
+                            ValidationResult.Invalid("Password must be greater than 6 characters")
+                        }
+                        (!regex.matches(user.password.toString())) -> {
+                            ValidationResult.Invalid("Password does not meet character requirements")
+                        }
+                        else -> {
+                            ValidationResult.Valid
+                        }
+                    }
+                }
+            }
+            login()
+            register()
+            token()
+        }
     }
 }
 
@@ -30,13 +49,6 @@ private fun Route.register() {
 
     post("/register") {
         val user = call.receive<User>()
-
-        if (user.password.toString().length < 6) {
-            call.respondText("Password must be greater than 6 characters", status = HttpStatusCode.BadRequest)
-        }
-        if (!regex.matches(user.password.toString())) {
-            call.respondText("Password does not meet character requirements", status = HttpStatusCode.BadRequest)
-        }
 
         user.password = BCrypt.hashpw(user.password, BCrypt.gensalt())
         userRepository.insert(user)
@@ -50,13 +62,6 @@ private fun Route.login() {
 
     post("/login") {
         val request = call.receive<User>()
-
-        if (request.password.toString().length < 6) {
-            call.respondText("Password must be greater than 6 characters", status = HttpStatusCode.BadRequest)
-        }
-        if (!regex.matches(request.password.toString())) {
-            call.respondText("Password does not meet character requirements", status = HttpStatusCode.BadRequest)
-        }
 
         val user = userRepository.findByName(request.name) ?: return@post call.respondText(
             "No found with name ${request.name}",

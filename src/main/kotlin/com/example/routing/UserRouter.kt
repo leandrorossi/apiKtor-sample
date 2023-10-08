@@ -5,6 +5,7 @@ import com.example.models.User
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -12,12 +13,14 @@ import io.ktor.server.routing.*
 fun Application.userRouter() {
     routing {
         authenticate("auth-jwt") {
-            getAllUsers()
-            getUserById()
-            getUserByName()
-            insertUser()
-            editUser()
-            deleteUser()
+            rateLimit (RateLimitName("protected")) {
+                getAllUsers()
+                getUserById()
+                getUserByName()
+                insertUser()
+                editUser()
+                deleteUser()
+            }
         }
     }
 }

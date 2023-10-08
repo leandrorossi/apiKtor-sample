@@ -1,9 +1,7 @@
 package com.example
 
 import com.example.dao.DatabaseFactory
-import com.example.plugins.configureCompression
-import com.example.plugins.configureJWT
-import com.example.plugins.configureSerialization
+import com.example.plugins.*
 import com.example.routing.loginRouter
 import com.example.routing.toolRouter
 import com.example.routing.userRouter
@@ -17,6 +15,8 @@ fun Application.module() {
     configureJWT()
     configureSerialization()
     configureCompression()
+    configureRateLimit()
+    configureStatusPage()
 
     userRouter()
     loginRouter()

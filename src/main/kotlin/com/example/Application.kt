@@ -22,6 +22,7 @@ fun Application.module() {
     configureCompression()
     configureRateLimit()
     configureStatusPage()
+    configureKoin()
 
     userRouter()
     loginRouter()
